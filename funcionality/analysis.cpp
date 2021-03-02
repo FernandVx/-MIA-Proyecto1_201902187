@@ -32,24 +32,44 @@ void Analysis::start()
         }
 
         string tkn = token(action);
-        action.erase(0, tkn.length()+1);
-        cout << tkn<<endl;
+        action.erase(0, tkn.length() + 1);
+        cout << tkn << endl;
         execute(tkn, action);
     }
 }
 
 void Analysis::execute(string token, string body)
 {
-    
+
     if (shrd.compare(token, "MKDISK"))
     {
         vector<string> context = split(body, token);
-        if (context.size()==0)
+        if (context.size() == 0)
         {
             shrd.handler(token, "requiere parámetros");
             return;
         }
         disk.mkdisk(context);
+    }
+    else if (shrd.compare(token, "RMDISK"))
+    {
+        vector<string> context = split(body, token);
+        if (context.size() == 0)
+        {
+            shrd.handler(token, "requiere parámetros");
+            return;
+        }
+        disk.rmdisk(context);
+    }
+    else if (shrd.compare(token, "FDISK"))
+    {
+        vector<string> context = split(body, token);
+        if (context.size() == 0)
+        {
+            shrd.handler(token, "requiere parámetros");
+            return;
+        }
+        disk.rmdisk(context);
     }
     else
     {
@@ -125,13 +145,14 @@ vector<string> Analysis::split(string s, string source)
                 }
             }
 
-            tmp += c;
             if ((status == 4) && c == ' ')
             {
                 status = -1;
                 result.push_back(tmp);
                 tmp = "";
+                continue;
             }
+            tmp += c;
         }
         else if ((c == '-' && status == -1))
         {
