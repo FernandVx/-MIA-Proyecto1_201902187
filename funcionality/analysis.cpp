@@ -69,7 +69,7 @@ void Analysis::execute(string token, string body)
             shrd.handler(token, "requiere parámetros");
             return;
         }
-        disk.rmdisk(context);
+        disk.fdisk(context);
     }
     else
     {

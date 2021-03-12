@@ -1,6 +1,10 @@
-Mkdisk -Size=3000 -u=K -path=/home/fernandv/Disco1.dk
+Mkdisk -Size=3000 -u=K -f=BF -path=/home/fernandv/Disco1.dk
 Mkdisk -Size=20 -u=M -path=/home/fernandv/Disco695.dk
 Mkdisk -Size=20 -u=L -path=/home/fernandv/Disco695.dk
 Mkdisk -Size=20 -u=M -path="/home/fernandv/Disco1255 1022.dk"
+
 rmDisk -path=/home/fernandv/Disco1.dk
 rmDisk -path="/home/fernandv/Disco1255 1022.dk"
+
+
+fdisk -Size=300 -path=/home/fernandv/Disco1.dk -name=Particion1

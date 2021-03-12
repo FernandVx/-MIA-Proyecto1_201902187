@@ -11,11 +11,11 @@ public:
     Structs();
     typedef struct _Partition
     {
-        char part_status;
+        char part_status = '0';
         char part_type;
         char part_fit;
-        int part_start;
-        int part_size;
+        int part_start = -1;
+        int part_size = 0;
         char part_name[16];
     } Partition;
 
@@ -40,6 +40,15 @@ public:
         int part_next;
         char part_name[16];
     } EBR;
+
+    typedef struct _Transition
+    {
+        int partition;
+        int start;
+        int end;
+        int before;
+        int after;
+    } Transition;
 };
 
 #endif // END OF DECLARATION

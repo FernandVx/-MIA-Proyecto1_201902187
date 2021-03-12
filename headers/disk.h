@@ -18,6 +18,8 @@ public:
     void removedisk(string p);
     void fdisk(vector<string> context);
     void generatepartition(string s, string u, string p, string t, string f, string n, string a);
+    vector<Structs::Partition> getPartitions(Structs::MBR disk);
+    Structs::MBR adjust(Structs::MBR mbr, Structs::Partition p, vector<Structs::Transition> t, vector<Structs::Partition> ps, int u);
 };
 
 #endif // END OF DECLARATION
