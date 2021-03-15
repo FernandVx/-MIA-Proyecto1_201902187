@@ -17,4 +17,4 @@ add_executable(_MIA_Proyecto1_201902187
         headers/mount.h
         headers/shared.h
         headers/structs.h
-        main.cpp headers/admin.h funcionality/admin.cpp)
+        main.cpp headers/admin.h funcionality/admin.cpp funcionality/report.cpp headers/report.h)

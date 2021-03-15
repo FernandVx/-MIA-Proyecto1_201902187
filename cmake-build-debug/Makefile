@@ -278,6 +278,33 @@ funcionality/mount.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/_MIA_Proyecto1_201902187.dir/build.make CMakeFiles/_MIA_Proyecto1_201902187.dir/funcionality/mount.cpp.s
 .PHONY : funcionality/mount.cpp.s
 
+funcionality/report.o: funcionality/report.cpp.o
+
+.PHONY : funcionality/report.o
+
+# target to build an object file
+funcionality/report.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/_MIA_Proyecto1_201902187.dir/build.make CMakeFiles/_MIA_Proyecto1_201902187.dir/funcionality/report.cpp.o
+.PHONY : funcionality/report.cpp.o
+
+funcionality/report.i: funcionality/report.cpp.i
+
+.PHONY : funcionality/report.i
+
+# target to preprocess a source file
+funcionality/report.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/_MIA_Proyecto1_201902187.dir/build.make CMakeFiles/_MIA_Proyecto1_201902187.dir/funcionality/report.cpp.i
+.PHONY : funcionality/report.cpp.i
+
+funcionality/report.s: funcionality/report.cpp.s
+
+.PHONY : funcionality/report.s
+
+# target to generate assembly for a file
+funcionality/report.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/_MIA_Proyecto1_201902187.dir/build.make CMakeFiles/_MIA_Proyecto1_201902187.dir/funcionality/report.cpp.s
+.PHONY : funcionality/report.cpp.s
+
 funcionality/shared.o: funcionality/shared.cpp.o
 
 .PHONY : funcionality/shared.o
@@ -356,6 +383,9 @@ help:
 	@echo "... funcionality/mount.o"
 	@echo "... funcionality/mount.i"
 	@echo "... funcionality/mount.s"
+	@echo "... funcionality/report.o"
+	@echo "... funcionality/report.i"
+	@echo "... funcionality/report.s"
 	@echo "... funcionality/shared.o"
 	@echo "... funcionality/shared.i"
 	@echo "... funcionality/shared.s"

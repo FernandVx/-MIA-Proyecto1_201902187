@@ -112,25 +112,9 @@ void Disk::generatedisk(string s, string f, string u, string p)
             p = p.substr(1, p.length() - 2);
         }
 
-        Structs::Partition transition;
-        transition.part_status = '1';
-        transition.part_size = 650;
-        transition.part_type = toupper('P');
-        transition.part_fit = toupper('W');
-        strcpy(transition.part_name, "TEST");
-        transition.part_start = sizeof(disk) + 1;
-
-        Structs::Partition transition2;
-        transition2.part_status = '1';
-        transition2.part_size = 714;
-        transition2.part_type = toupper('P');
-        transition2.part_fit = toupper('W');
-        strcpy(transition2.part_name, "TEST");
-        transition2.part_start = 70000;
-
         Structs::Partition pr;
-        disk.mbr_Partition_1 = transition;
-        disk.mbr_Partition_2 = transition2;
+        disk.mbr_Partition_1 = pr;
+        disk.mbr_Partition_2 = pr;
         disk.mbr_Partition_3 = pr;
         disk.mbr_Partition_4 = pr;
 

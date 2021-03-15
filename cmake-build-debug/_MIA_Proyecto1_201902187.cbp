@@ -99,6 +99,9 @@
 		<Unit filename="/home/fernandv/Documents/-MIA-Proyecto1_201902187/funcionality/mount.cpp">
 			<Option target="_MIA_Proyecto1_201902187"/>
 		</Unit>
+		<Unit filename="/home/fernandv/Documents/-MIA-Proyecto1_201902187/funcionality/report.cpp">
+			<Option target="_MIA_Proyecto1_201902187"/>
+		</Unit>
 		<Unit filename="/home/fernandv/Documents/-MIA-Proyecto1_201902187/funcionality/shared.cpp">
 			<Option target="_MIA_Proyecto1_201902187"/>
 		</Unit>
@@ -115,6 +118,9 @@
 			<Option target="_MIA_Proyecto1_201902187"/>
 		</Unit>
 		<Unit filename="/home/fernandv/Documents/-MIA-Proyecto1_201902187/headers/mount.h">
+			<Option target="_MIA_Proyecto1_201902187"/>
+		</Unit>
+		<Unit filename="/home/fernandv/Documents/-MIA-Proyecto1_201902187/headers/report.h">
 			<Option target="_MIA_Proyecto1_201902187"/>
 		</Unit>
 		<Unit filename="/home/fernandv/Documents/-MIA-Proyecto1_201902187/headers/shared.h">

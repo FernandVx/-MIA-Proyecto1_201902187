@@ -4,6 +4,7 @@ file(REMOVE_RECURSE
   "CMakeFiles/_MIA_Proyecto1_201902187.dir/funcionality/disk.cpp.o"
   "CMakeFiles/_MIA_Proyecto1_201902187.dir/funcionality/filesystem.cpp.o"
   "CMakeFiles/_MIA_Proyecto1_201902187.dir/funcionality/mount.cpp.o"
+  "CMakeFiles/_MIA_Proyecto1_201902187.dir/funcionality/report.cpp.o"
   "CMakeFiles/_MIA_Proyecto1_201902187.dir/funcionality/shared.cpp.o"
   "CMakeFiles/_MIA_Proyecto1_201902187.dir/main.cpp.o"
   "_MIA_Proyecto1_201902187"
