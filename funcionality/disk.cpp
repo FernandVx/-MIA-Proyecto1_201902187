@@ -5,10 +5,7 @@
 #include "string"
 #include <locale>
 
-using namespace std;
-
-Shared shared;
-
+int startValue = 0;
 Disk::Disk()
 {
 }
@@ -292,14 +289,180 @@ void Disk::fdisk(vector<string> context)
                 add = current;
             }
         }
+        if (required.size() != 0)
+        {
+            shared.handler("FDISK", "create requiere parámetros obligatorios");
+            return;
+        }
         generatepartition(size, u, path, type, f, name, add);
     }
     else
     {
-        vector<string> required = {"path", "name"};
+        vector<string> required = {"path", "name", "delete"};
         string _delete = "";
         string path = "";
         string name = "";
+
+        for (string current : context)
+        {
+            string id = current.substr(0, current.find("="));
+            current.erase(0, id.length() + 1);
+
+            if (shared.compare(id, "path"))
+            {
+                auto itr = find(required.begin(), required.end(), id);
+                required.erase(itr);
+                path = current;
+            }
+            else if (shared.compare(id, "name"))
+            {
+                auto itr = find(required.begin(), required.end(), id);
+                required.erase(itr);
+                name = current;
+            }
+            else if (shared.compare(id, "delete"))
+            {
+                auto itr = find(required.begin(), required.end(), id);
+                required.erase(itr);
+                _delete = current;
+            }
+        }
+        if (required.size() != 0)
+        {
+            shared.handler("FDISK", "delete requiere parámetros obligatorios");
+            return;
+        }
+        deletepartition(_delete, path, name);
+    }
+}
+void Disk::deletepartition(string d, string p, string n)
+{
+    try
+    {
+
+        if (p.substr(0, 1) == "\"")
+        {
+            p = p.substr(1, p.length() - 2);
+        }
+
+        if (!(shared.compare(d, "fast") || shared.compare(d, "full")))
+        {
+            throw runtime_error("-delete necesita valores específicos");
+        }
+
+        FILE *file = fopen(p.c_str(), "rb+");
+        if (file == NULL)
+        {
+            throw runtime_error("disco no existente");
+        }
+
+        Structs::MBR disk;
+        rewind(file);
+        fread(&disk, sizeof(Structs::MBR), 1, file);
+
+        findby(disk, n);
+
+        Structs::Partition partitions[4];
+        partitions[0] = disk.mbr_Partition_1;
+        partitions[1] = disk.mbr_Partition_2;
+        partitions[2] = disk.mbr_Partition_3;
+        partitions[3] = disk.mbr_Partition_4;
+
+        if (shared.compare(d, "fast"))
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                if (partitions[i].part_status == '1')
+                {
+                    if (shared.compare(partitions[i].part_name, n))
+                    {
+                        partitions[i].part_status = '0';
+                        break;
+                    }
+                }
+            }
+            Structs::Partition aux;
+            for (int i = 3; i >= 0; i--)
+            {
+                for (int j = 0; j < i; j++)
+                {
+                    if ((partitions[j].part_status == '0'))
+                    {
+                        aux = partitions[j];
+                        partitions[j] = partitions[j + 1];
+                        partitions[j + 1] = aux;
+                    }
+                }
+            }
+
+            disk.mbr_Partition_1 = partitions[0];
+            disk.mbr_Partition_2 = partitions[1];
+            disk.mbr_Partition_3 = partitions[2];
+            disk.mbr_Partition_4 = partitions[3];
+
+            rewind(file);
+            fwrite(&disk, sizeof(Structs::MBR), 1, file);
+            shared.response("FDISK", "partición eliminada correctamente -" + d);
+        }
+        else if (shared.compare(d, "full"))
+        {
+            Structs::Partition past;
+            for (int i = 0; i < 4; i++)
+            {
+                if (partitions[i].part_status == '1')
+                {
+                    if (shared.compare(partitions[i].part_name, n))
+                    {
+                        past = partitions[i];
+                        partitions[i] = Structs::Partition();
+                        break;
+                    }
+                }
+            }
+            Structs::Partition aux;
+            for (int i = 3; i >= 0; i--)
+            {
+                for (int j = 0; j < i; j++)
+                {
+                    if ((partitions[j].part_status == '0'))
+                    {
+                        aux = partitions[j];
+                        partitions[j] = partitions[j + 1];
+                        partitions[j + 1] = aux;
+                    }
+                }
+            }
+
+            disk.mbr_Partition_1 = partitions[0];
+            disk.mbr_Partition_2 = partitions[1];
+            disk.mbr_Partition_3 = partitions[2];
+            disk.mbr_Partition_4 = partitions[3];
+
+            rewind(file);
+            fwrite(&disk, sizeof(Structs::MBR), 1, file);
+
+            fseek(file, past.part_start, SEEK_SET);
+            int num = static_cast<int>(past.part_size / 2);
+            fwrite("\0", sizeof("\0"), num, file);
+            shared.response("FDISK", "partición eliminada correctamente -" + d);
+        }
+        fclose(file);
+        Structs::MBR diska;
+        FILE *iFile = fopen(p.c_str(), "rb+");
+        if (iFile != NULL)
+        {
+            rewind(iFile);
+            fread(&diska, sizeof(disk), 1, iFile);
+            cout << diska.mbr_Partition_1.part_status << ") (" << diska.mbr_Partition_1.part_start << " SIZE-> " << diska.mbr_Partition_1.part_size << ") " << diska.mbr_Partition_1.part_status << " , " << diska.mbr_Partition_1.part_type << endl;
+            cout << diska.mbr_Partition_2.part_status << ") (" << diska.mbr_Partition_2.part_start << " SIZE-> " << diska.mbr_Partition_2.part_size << ") " << diska.mbr_Partition_2.part_status << " , " << diska.mbr_Partition_2.part_type << endl;
+            cout << diska.mbr_Partition_3.part_status << ") (" << diska.mbr_Partition_3.part_start << " SIZE-> " << diska.mbr_Partition_3.part_size << ") " << diska.mbr_Partition_3.part_status << " , " << diska.mbr_Partition_3.part_type << endl;
+            cout << diska.mbr_Partition_4.part_status << ") (" << diska.mbr_Partition_4.part_start << " SIZE-> " << diska.mbr_Partition_4.part_size << ") " << diska.mbr_Partition_4.part_status << " , " << diska.mbr_Partition_4.part_type << endl;
+        }
+    }
+    catch (exception &e)
+    {
+        shared.handler("FDISK", e.what());
+        return;
     }
 }
 
@@ -308,6 +471,7 @@ void Disk::generatepartition(string s, string u, string p, string t, string f, s
     Structs::Partition partition;
     try
     {
+        startValue = 0;
         int i = stoi(s);
 
         if (i <= 0)
@@ -344,24 +508,23 @@ void Disk::generatepartition(string s, string u, string p, string t, string f, s
         }
 
         Structs::MBR disk;
-        cout << sizeof(disk) << endl;
-        FILE *iFile = fopen(p.c_str(), "rb+");
-        if (iFile != NULL)
+        FILE *siFile = fopen(p.c_str(), "rb+");
+        if (siFile != NULL)
         {
-            rewind(iFile);
-            fread(&disk, sizeof(disk), 1, iFile);
+            rewind(siFile);
+            fread(&disk, sizeof(disk), 1, siFile);
         }
         else
         {
             shared.handler("FDISK", "disco no existente");
             return;
         }
-        fclose(iFile);
+        fclose(siFile);
 
         cout << "Disco Leido:\nSize: " << disk.mbr_tamano << "\nDate: " << disk.mbr_fecha_creacion << "\nFit: " << disk.disk_fit << endl;
         vector<Structs::Partition> partitions = getPartitions(disk);
-        vector<Structs::Transition> between;
-        
+        vector<Transition> between;
+
         int used = 0;
         int ext = 0;
         int c = 1;
@@ -370,7 +533,7 @@ void Disk::generatepartition(string s, string u, string p, string t, string f, s
         {
             if (prttn.part_status == '1')
             {
-                Structs::Transition trn;
+                Transition trn;
                 trn.partition = c;
                 trn.start = prttn.part_start;
                 trn.end = prttn.part_start + prttn.part_size;
@@ -384,10 +547,12 @@ void Disk::generatepartition(string s, string u, string p, string t, string f, s
 
                 between.push_back(trn);
                 used++;
-            }
-            else if (prttn.part_type == 'E')
-            {
-                ext++;
+
+                cout << prttn.part_type << "e" << endl;
+                if (prttn.part_type == 'e' || prttn.part_type == 'E')
+                {
+                    ext++;
+                }
             }
 
             if (used == 4)
@@ -396,7 +561,7 @@ void Disk::generatepartition(string s, string u, string p, string t, string f, s
             }
             else if (ext == 1 && shared.compare(t, "e"))
             {
-                throw runtime_error("ya no se pueden crear más partciones extendidas");
+                throw runtime_error("ya no se pueden crear más particiones extendidas");
             }
 
             c++;
@@ -413,10 +578,34 @@ void Disk::generatepartition(string s, string u, string p, string t, string f, s
         transition.part_fit = toupper(f[0]);
         strcpy(transition.part_name, n.c_str());
         cout << used << endl;
-        adjust(disk, transition, between, partitions, used);
+        disk = adjust(disk, transition, between, partitions, used);
 
-        if (shared.compare(t, "p"))
+        FILE *bfile = fopen(p.c_str(), "rb+");
+        if (bfile != NULL)
         {
+            fseek(bfile, 0, SEEK_SET);
+            fwrite(&disk, sizeof(Structs::MBR), 1, bfile);
+            if (shared.compare(t, "e"))
+            {
+                Structs::EBR ebr;
+                ebr.part_start = startValue + sizeof(ebr) + 1;
+                fseek(bfile, startValue, SEEK_SET);
+                fwrite(&ebr, sizeof(Structs::EBR), 1, bfile);
+            }
+            fclose(bfile);
+            shared.response("FDISK", "partición creada correctamente");
+        }
+
+        Structs::MBR diska;
+        FILE *iFile = fopen(p.c_str(), "rb+");
+        if (iFile != NULL)
+        {
+            rewind(iFile);
+            fread(&diska, sizeof(disk), 1, iFile);
+            cout << diska.mbr_Partition_1.part_status << ") (" << diska.mbr_Partition_1.part_start << " SIZE-> " << diska.mbr_Partition_1.part_size << ") " << diska.mbr_Partition_1.part_status << " , " << diska.mbr_Partition_1.part_type << endl;
+            cout << diska.mbr_Partition_2.part_status << ") (" << diska.mbr_Partition_2.part_start << " SIZE-> " << diska.mbr_Partition_2.part_size << ") " << diska.mbr_Partition_2.part_status << " , " << diska.mbr_Partition_2.part_type << endl;
+            cout << diska.mbr_Partition_3.part_status << ") (" << diska.mbr_Partition_3.part_start << " SIZE-> " << diska.mbr_Partition_3.part_size << ") " << diska.mbr_Partition_3.part_status << " , " << diska.mbr_Partition_3.part_type << endl;
+            cout << diska.mbr_Partition_4.part_status << ") (" << diska.mbr_Partition_4.part_start << " SIZE-> " << diska.mbr_Partition_4.part_size << ") " << diska.mbr_Partition_4.part_status << " , " << diska.mbr_Partition_4.part_type << endl;
         }
     }
     catch (invalid_argument &e)
@@ -441,10 +630,10 @@ vector<Structs::Partition> Disk::getPartitions(Structs::MBR disk)
     return v;
 }
 
-Structs::MBR Disk::adjust(Structs::MBR mbr, Structs::Partition p, vector<Structs::Transition> t, vector<Structs::Partition> ps, int u)
+Structs::MBR Disk::adjust(Structs::MBR mbr, Structs::Partition p, vector<Transition> t, vector<Structs::Partition> ps, int u)
 {
     cout << "TESTTTTTTTT" << endl;
-    for (Structs::Transition tr : t)
+    for (Transition tr : t)
     {
         cout << tr.partition << ") (" << tr.start << " <-> " << tr.end << ") " << tr.before << "," << tr.after << endl;
     }
@@ -453,12 +642,13 @@ Structs::MBR Disk::adjust(Structs::MBR mbr, Structs::Partition p, vector<Structs
     {
         p.part_start = sizeof(mbr) + 1;
         mbr.mbr_Partition_1 = p;
+        return mbr;
     }
     else
     {
-        Structs::Transition toUse;
+        Transition toUse;
         int c = 0;
-        for (Structs::Transition tr : t)
+        for (Transition tr : t)
         {
             if (c == 0)
             {
@@ -544,10 +734,12 @@ Structs::MBR Disk::adjust(Structs::MBR mbr, Structs::Partition p, vector<Structs
                 if (toUse.before >= p.part_size)
                 {
                     p.part_start = (toUse.start - toUse.before);
+                    startValue = p.part_start;
                 }
                 else
                 {
                     p.part_start = toUse.end + 1;
+                    startValue = p.part_start;
                 }
             }
             else if (toupper(mbr.disk_fit) == 'B')
@@ -559,10 +751,12 @@ Structs::MBR Disk::adjust(Structs::MBR mbr, Structs::Partition p, vector<Structs
                 if ((toUse.before >= p.part_size && b1 < a1) || !(toUse.after >= p.part_start))
                 {
                     p.part_start = (toUse.start - toUse.before);
+                    startValue = p.part_start;
                 }
                 else
                 {
                     p.part_start = toUse.end + 1;
+                    startValue = p.part_start;
                 }
             }
             else if (toupper(mbr.disk_fit) == 'W')
@@ -573,50 +767,93 @@ Structs::MBR Disk::adjust(Structs::MBR mbr, Structs::Partition p, vector<Structs
                 if ((toUse.before >= p.part_size && b1 > a1) || !(toUse.after >= p.part_start))
                 {
                     p.part_start = (toUse.start - toUse.before);
+                    startValue = p.part_start;
                 }
                 else
                 {
                     p.part_start = toUse.end + 1;
+                    startValue = p.part_start;
                 }
             }
 
-            cout << p.part_name << ") (" << p.part_start << " <-> " << p.part_size << ") " << p.part_status << " , " << p.part_type << endl;
+            cout << p.part_start << endl;
             int c = 0;
-            cout<<c<<endl;
-            for (Structs::Partition pp : ps)
+            Structs::Partition partitions[4];
+            for (int i = 0; i < ps.size(); i++)
             {
-                if (pp.part_status == '0')
+                partitions[i] = ps.at(i);
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                if (partitions[i].part_status == '0')
                 {
-                    c++;
+                    partitions[i] = p;
                     break;
                 }
-                c++;
             }
-            cout<<c<<endl;
-            ps.at(c) = p;
 
             Structs::Partition aux;
             for (int i = 3; i >= 0; i--)
             {
                 for (int j = 0; j < i; j++)
                 {
-                    if ((ps.at(j).part_start > ps.at(j + 1).part_start) && ps.at(j + 1).part_status != '0')
+                    if ((partitions[j].part_start > partitions[j + 1].part_start))
                     {
-                        aux = ps.at(j + 1);
-                        ps.at(j + 1) = ps.at(j);
-                        ps.at(j + 1) = aux;
+                        aux = partitions[j + 1];
+                        partitions[j + 1] = partitions[j];
+                        partitions[j] = aux;
                     }
                 }
             }
 
-            for (Structs::Partition pp : ps)
+            for (int i = 3; i >= 0; i--)
             {
-                cout << pp.part_status << ") (" << pp.part_start << " <-> " << pp.part_size << ") " << pp.part_status << " , " << pp.part_type << endl;
+                for (int j = 0; j < i; j++)
+                {
+                    if ((partitions[j].part_status == '0'))
+                    {
+                        aux = partitions[j];
+                        partitions[j] = partitions[j + 1];
+                        partitions[j + 1] = aux;
+                    }
+                }
             }
+
+            for (int i = 0; i < 4; i++)
+            {
+                cout << partitions[i].part_status << ") (" << partitions[i].part_start << " <-> " << partitions[i].part_size << ") " << partitions[i].part_status << " , " << partitions[i].part_type << endl;
+            }
+
+            mbr.mbr_Partition_1 = partitions[0];
+            mbr.mbr_Partition_2 = partitions[1];
+            mbr.mbr_Partition_3 = partitions[2];
+            mbr.mbr_Partition_4 = partitions[3];
+            return mbr;
         }
         else
         {
             throw runtime_error("no hay espacio suficiente");
         }
     }
+}
+
+Structs::Partition Disk::findby(Structs::MBR mbr, string name)
+{
+    Structs::Partition partitions[4];
+    partitions[0] = mbr.mbr_Partition_1;
+    partitions[1] = mbr.mbr_Partition_2;
+    partitions[2] = mbr.mbr_Partition_3;
+    partitions[3] = mbr.mbr_Partition_4;
+
+    for (int i = 0; i < 4; i++)
+    {
+        if (partitions[i].part_status == '1')
+        {
+            if (shared.compare(partitions[i].part_name, name))
+            {
+                return partitions[i];
+            }
+        }
+    }
+    throw runtime_error("la partición no existe");
 }
