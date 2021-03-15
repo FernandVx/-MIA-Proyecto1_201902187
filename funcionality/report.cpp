@@ -90,12 +90,147 @@ void Report::mbr(string p, string id) {
                   "general [label = <table>\n"
                   "<tr><td COLSPAN = '2'>MBR</td></tr>\n"
                   "<tr><td>NOMBRE</td><td>VALOR</td></tr>\n"
-                  "<tr><td>mbr_tamaño</td>\n"
-                  "<td>" + to_string(disk.mbr_tamano) + "</td></tr>\n"
-                                                        "<tr><td>mbr_fecha_creación</td>\n"
-                                                        "<td>" + disk.mbr_fecha_creacion + "</td></tr>\n"
-                                                                                           "<tr><td>mbr_fecha_creación</td>\n"
-                                                                                           "<td>" + disk.mbr_fecha_creacion + "</td></tr>\n";
+                  "<tr>\n"
+                  "<td>mbr_tamaño</td>\n"
+                  "<td>" +
+                  to_string(disk.mbr_tamano) + "</td>\n"
+                                                "</tr>\n"
+                                                "<tr>\n"
+                                                "<td>mbr_fecha_creacion</td>\n"
+                                                "<td>" +
+                  string(disk.mbr_fecha_creacion) + "</td>\n"
+                                                     "</tr>\n"
+                                                     "<tr>\n"
+                                                     "<td>mbr_disk_signature</td>\n"
+                                                     "<td>" +
+                  to_string(disk.mbr_disk_signature) + "</td>\n"
+                                                        "</tr>\n"
+                                                        "<tr>\n"
+                                                        "<td>Disk_fit</td>\n"
+                                                        "<td>" +
+                  string(1, disk.disk_fit) + "</td>\n"
+                                              "</tr>\n"
+                                              "<tr>\n"
+                                              "<td>part_status_1</td>\n"
+                                              "<td>" +
+                  string(1, disk.mbr_Partition_1.part_status) + "</td>\n"
+                                                                 "</tr>\n"
+                                                                 "<tr>\n"
+                                                                 "<td>part_type_1</td>\n"
+                                                                 "<td>" +
+                  string(1, disk.mbr_Partition_1.part_type) + "</td>\n"
+                                                               "</tr>\n"
+                                                               "<tr>\n"
+                                                               "<td>part_fit_1</td>\n"
+                                                               "<td>" +
+                  string(1, disk.mbr_Partition_1.part_fit) + "</td>\n"
+                                                              "</tr>\n"
+                                                              "<tr>\n"
+                                                              "<td>part_start_1</td>\n"
+                                                              "<td>" +
+                  to_string(disk.mbr_Partition_1.part_start) + "</td>\n"
+                                                                "</tr>\n"
+                                                                "<tr>\n"
+                                                                "<td>part_size_1</td>\n"
+                                                                "<td>" +
+                  to_string(disk.mbr_Partition_1.part_size) + "</td>\n"
+                                                               "</tr>\n"
+                                                               "<tr>\n"
+                                                               "<td>part_name_1</td>\n"
+                                                               "<td>" +
+                  string(disk.mbr_Partition_1.part_name) + "</td>\n"
+                                                            "</tr>\n"
+                                                            "<tr>\n"
+                                                            "<td>part_status_2</td>\n"
+                                                            "<td>" +
+                  string(1, disk.mbr_Partition_2.part_status) + "</td>\n"
+                                                                 "</tr>\n"
+                                                                 "<tr>\n"
+                                                                 "<td>part_type_2</td>\n"
+                                                                 "<td>" +
+                  string(1, disk.mbr_Partition_2.part_type) + "</td>\n"
+                                                               "</tr>\n"
+                                                               "<tr>\n"
+                                                               "<td>part_fit_2</td>\n"
+                                                               "<td>" +
+                  string(1, disk.mbr_Partition_2.part_fit) + "</td>\n"
+                                                              "</tr>\n"
+                                                              "<tr>\n"
+                                                              "<td>part_start_2</td>\n"
+                                                              "<td>" +
+                  to_string(disk.mbr_Partition_2.part_start) + "</td>\n"
+                                                                "</tr>\n"
+                                                                "<tr>\n"
+                                                                "<td>part_size_2</td>\n"
+                                                                "<td>" +
+                  to_string(disk.mbr_Partition_2.part_size) + "</td>\n"
+                                                               "</tr>\n"
+                                                               "<tr>\n"
+                                                               "<td>part_name_2</td>\n"
+                                                               "<td>" +
+                  string(disk.mbr_Partition_2.part_name) + "</td>\n"
+                                                            "</tr>\n"
+                                                            "<tr>\n"
+                                                            "<td>part_status_3</td>\n"
+                                                            "<td>" +
+                  string(1, disk.mbr_Partition_3.part_status) + "</td>\n"
+                                                                 "</tr>\n"
+                                                                 "<tr>\n"
+                                                                 "<td>part_type_3</td>\n"
+                                                                 "<td>" +
+                  string(1, disk.mbr_Partition_3.part_type) + "</td>\n"
+                                                               "</tr>\n"
+                                                               "<tr>\n"
+                                                               "<td>part_fit_3</td>\n"
+                                                               "<td>" +
+                  string(1, disk.mbr_Partition_3.part_fit) + "</td>\n"
+                                                              "</tr>\n"
+                                                              "<tr>\n"
+                                                              "<td>part_start_3</td>\n"
+                                                              "<td>" +
+                  to_string(disk.mbr_Partition_3.part_start) + "</td>\n"
+                                                                "</tr>\n"
+                                                                "<tr>\n"
+                                                                "<td>part_size_3</td>\n"
+                                                                "<td>" +
+                  to_string(disk.mbr_Partition_3.part_size) + "</td>\n"
+                                                               "</tr>\n"
+                                                               "<tr>\n"
+                                                               "<td>part_name_3</td>\n"
+                                                               "<td>" +
+                  string(disk.mbr_Partition_3.part_name) + "</td>\n"
+                                                            "</tr>\n"
+                                                            "<tr>\n"
+                                                            "<td>part_status_4</td>\n"
+                                                            "<td>" +
+                  string(1, disk.mbr_Partition_4.part_status) + "</td>\n"
+                                                                 "</tr>\n"
+                                                                 "<tr>\n"
+                                                                 "<td>part_type_4</td>\n"
+                                                                 "<td>" +
+                  string(1, disk.mbr_Partition_4.part_type) + "</td>\n"
+                                                               "</tr>\n"
+                                                               "<tr>\n"
+                                                               "<td>part_fit_4</td>\n"
+                                                               "<td>" +
+                  string(1, disk.mbr_Partition_4.part_fit) + "</td>\n"
+                                                              "</tr>\n"
+                                                              "<tr>\n"
+                                                              "<td>part_start_4</td>\n"
+                                                              "<td>" +
+                  to_string(disk.mbr_Partition_4.part_start) + "</td>\n"
+                                                                "</tr>\n"
+                                                                "<tr>\n"
+                                                                "<td>part_size_4</td>\n"
+                                                                "<td>" +
+                  to_string(disk.mbr_Partition_4.part_size) + "</td>\n"
+                                                               "</tr>\n"
+                                                               "<tr>\n"
+                                                               "<td>part_name_4</td>\n"
+                                                               "<td>" +
+                  string(disk.mbr_Partition_4.part_name) + "</td>\n"
+                                                            "</tr>\n"
+                                                            "</table>>];\n";;
     } catch (exception &e) {
         shared.handler("REPORT", e.what());
     }
