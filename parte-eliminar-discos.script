@@ -1,0 +1,5 @@
+#ELIMINACION DE DISCOS
+
+rmdisk -path="/home/a eliminar disco/no_existo.dk"                #debe de mostrar error por no existir
+rmdisk -path="/tmp/eliminar 1.dk"                                 #verificar mensaje de eliminacion darle si
+rmdisk -path="/tmp/eliminar 2.dk"                                 #verificar mensaje de eliminacion darle si

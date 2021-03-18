@@ -1,0 +1,14 @@
+#REPORTES MBR
+rep -id=621a -Path=/home/parte1/mbr1.jpg -name=mbr
+rep -id=622a -Path=/home/parte1/mbr2.jpg -name=mbr
+rep -id=623a -Path=/home/parte1/mbr3.jpg -name=mbr
+
+#UNMOUNT
+unmount -id=621a
+
+rep -id=621a -Path=/home/parte1/mbr3.jpg -name=mbr #debe dar error porque ya no esta montada la particion
+
+#cerrar el programa para validar
+pause
+rep -id=622a -Path=/home/parte1/mbr3.jpg -name=mbr #debe dar error porque no deberia estar montado nada
+

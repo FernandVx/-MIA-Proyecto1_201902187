@@ -1,0 +1,11 @@
+#CAMBIO DE TAMAÑO  DE PARTICIONES
+fdisk -add=-30 -u=m -name=Part1 -path=/tmp/d1.dk #error, solo tiene 25mb de size
+fdisk -add=45 -u=m -name=Part3 -path=/tmp/d1.dk #error, no hay espacio 
+fdisk -add=-20 -u=m -name=Part1 -path=/tmp/d1.dk
+fdisk -add=45 -u=m -name=Part3 -path=/tmp/d1.dk 
+
+#reporte disk despues de cambiar tamaños
+rep -id=621a -Path=/home/parte1/particiones/d1.jpg -name=disk
+rep -id=622a -Path=/home/parte1/particiones/d2.jpg -name=disk
+rep -id=623a -Path=/home/parte1/particiones/d3.jpg -name=disk
+
