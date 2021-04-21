@@ -21,9 +21,9 @@
 *.script
 
 #Ide Files
-*/.idea/
-*/.vscode/
-*/cmake-build-debug/ 
+idea/
+.vscode/
+cmake-build-debug/ 
 
 # Fortran module files
 *.mod
