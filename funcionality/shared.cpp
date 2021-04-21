@@ -24,6 +24,17 @@ string Shared::upper(string s)
     return u;
 }
 
+string Shared::lower(string s)
+{
+    string u;
+    locale loc;
+    for (int i = 0; i < s.length(); i++)
+    {
+        u += tolower(s[i], loc);
+    }
+    return u;
+}
+
 bool Shared::compare(string s1, string s2)
 {
     s1 = upper(s1);

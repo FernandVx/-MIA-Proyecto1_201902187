@@ -24,11 +24,16 @@ void Analysis::start() {
 
         if (shrd.compare(action, end)) {
             return;
+        } else if (action.rfind('#', 0) == 0) {
+            continue;
+        } else if (shrd.compare(action, "pause")) {
+            string tmp;
+            getline(cin, tmp);
+            continue;
         }
 
         string tkn = token(action);
         action.erase(0, tkn.length() + 1);
-        cout << tkn << endl;
         execute(tkn, action);
     }
 }
@@ -58,10 +63,6 @@ void Analysis::execute(string token, string body) {
         disk.fdisk(context);
     } else if (shrd.compare(token, "MOUNT")) {
         vector<string> context = split(body, token);
-        if (context.size() == 0) {
-            shrd.handler(token, "requiere parámetros");
-            return;
-        }
         mount.mount(context);
     } else if (shrd.compare(token, "UNMOUNT")) {
         vector<string> context = split(body, token);
@@ -128,7 +129,7 @@ void Analysis::execute(string token, string body) {
             return;
         }
         admin.usr(context, "MK");
-    }  else if (shrd.compare(token, "RMUSR")) {
+    } else if (shrd.compare(token, "RMUSR")) {
         if (!isLogged) {
             shrd.handler(token, "login para continuar");
             return;
@@ -139,8 +140,42 @@ void Analysis::execute(string token, string body) {
             return;
         }
         admin.usr(context, "RM");
+    } else if (shrd.compare(token, "RMDISK")) {
+        vector<string> context = split(body, token);
+        if (context.size() == 0) {
+            shrd.handler(token, "requiere parámetros");
+            return;
+        }
+        disk.rmdisk(context);
+    } else if (shrd.compare(token, "MKDIR")) {
+        if (!isLogged) {
+            shrd.handler(token, "login para continuar");
+            return;
+        }
+        vector<string> context = split(body, token);
+        if (context.size() == 0) {
+            shrd.handler(token, "requiere parámetros");
+            return;
+        }
+        string p;
+        Structs::Partition partition = mount.getmount(admin.logged.id, &p);
+        fileManager.mkdir(context, partition, p);
+    } else if (shrd.compare(token, "REP")) {
+        vector<string> context = split(body, token);
+        if (context.size() == 0) {
+            shrd.handler(token, "requiere parámetros");
+            return;
+        }
+        report.generate(context, mount);
+    } else if (shrd.compare(token, "EXEC")) {
+        vector<string> context = split(body, token);
+        if (context.size() == 0) {
+            shrd.handler(token, "requiere parámetros");
+            return;
+        }
+        execute(context);
     } else {
-        cout << "BAD" << endl;
+        shrd.handler("CONSOLE", "comando no reconocido");
     }
 }
 
@@ -202,10 +237,81 @@ vector<string> Analysis::split(string s, string source) {
             status = 1;
         }
     }
-
-    cout << "RESULT: (BORRAR)" << endl;
-    for (int i = 0; i < result.size(); i++) {
-        std::cout << result.at(i) << endl;
-    }
+//
+//    cout << "RESULT: (BORRAR)" << endl;
+//    for (int i = 0; i < result.size(); i++) {
+//        std::cout << result.at(i) << endl;
+//    }
     return result;
+}
+
+void Analysis::execute(vector<string> context) {
+    vector<string> required = {"path"};
+    string path;
+    for (auto current : context) {
+        string id = shrd.lower(current.substr(0, current.find('=')));
+        current.erase(0, id.length() + 1);
+        if (current.substr(0, 1) == "\"") {
+            current = current.substr(1, current.length() - 2);
+        }
+
+        if (shrd.compare(id, "path")) {
+            if (count(required.begin(), required.end(), id)) {
+                auto itr = find(required.begin(), required.end(), id);
+                required.erase(itr);
+                path = current;
+            }
+        }
+    }
+    if (!required.empty()) {
+        shrd.handler("EXEC", "requiere un parámetro obligatorio");
+        return;
+    }
+    execute(path);
+}
+
+void Analysis::execute(string p) {
+
+    FILE *rfile = fopen(p.c_str(), "rb+");
+    if (rfile == NULL) {
+        shrd.handler("EXEC", "archivo no existente");
+        return;
+    }
+    fclose(rfile);
+
+    ifstream file(p);
+    string str;
+
+    string end = "q";
+    while (std::getline(file, str)) {
+
+
+        string action = str;
+        if (shrd.compare(action, end)) {
+            return;
+        } else if (action.rfind('#', 0) == 0 || action == "\n" || action.empty()) {
+            continue;
+        } else if (shrd.compare(action, "pause")) {
+            string tmp;
+            cout << "\033[1;31m~ \033[0m" << "PAUSE" << endl;
+
+            getline(cin, tmp);
+            continue;
+        }
+
+        string tkn = token(action);
+        action.erase(0, tkn.length() + 1);
+
+        string prnt = tkn;
+        vector<string> context = split(action, tkn);
+        if (context.size() != 0) {
+            for (string tm: context) {
+                prnt += " " + tm;
+            }
+        }
+
+        cout << "\033[1;31m~ \033[0m" << prnt << endl;
+        execute(tkn, action);
+        cout << endl;
+    }
 }

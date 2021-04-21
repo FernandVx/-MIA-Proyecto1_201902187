@@ -3,7 +3,6 @@
 #include <iostream>
 #include <stdlib.h>
 #include "string"
-#include <locale>
 
 using namespace std;
 
@@ -17,9 +16,8 @@ void FileSystem::mkfs(vector<string> context) {
     string type = "Full";
     string fs = "2fs";
 
-    for (int i = 0; i < context.size(); i++) {
-        string current = context.at(i);
-        string id_ = current.substr(0, current.find("="));
+    for (auto current : context) {
+        string id_ = shared.lower(current.substr(0, current.find('=')));
         current.erase(0, id_.length() + 1);
         if (current.substr(0, 1) == "\"") {
             current = current.substr(1, current.length() - 2);
@@ -78,9 +76,10 @@ void FileSystem::mkfs(string id, string t, string fs) {
             ext2(spr, partition, n, p);
         } else {
             spr.s_filesystem_type = 3;
+            ext3(spr, partition, n, p);
         }
 
-        shared.response("MKFS","formateo realizado con éxito");
+        shared.response("MKFS", "formateo realizado con éxito");
     }
     catch (invalid_argument &e) {
         shared.handler("MKFS", "identificador de disco incorrecto, debe ser entero");
@@ -114,13 +113,13 @@ void FileSystem::ext2(Structs::Superblock spr, Structs::Partition p, int n, stri
     }
 
     Structs::Inodes inode;
-    fseek(bfile, spr.s_bm_inode_start, SEEK_SET);
+    fseek(bfile, spr.s_inode_start, SEEK_SET);
     for (int i = 0; i < n; i++) {
         fwrite(&inode, sizeof(Structs::Inodes), 1, bfile);
     }
 
     Structs::Folderblock folder;
-    fseek(bfile, spr.s_bm_block_start, SEEK_SET);
+    fseek(bfile, spr.s_block_start, SEEK_SET);
     for (int i = 0; i < (3 * n); i++) {
         fwrite(&folder, sizeof(Structs::Folderblock), 1, bfile);
     }
@@ -131,42 +130,46 @@ void FileSystem::ext2(Structs::Superblock spr, Structs::Partition p, int n, stri
     fseek(archivo, p.part_start, SEEK_SET);
     fread(&recuperado, sizeof(Structs::Superblock), 1, archivo);
     fclose(archivo);
-    cout << endl;
-    cout << "Tipo de sistema: " << recuperado.s_filesystem_type << endl;
-    cout << "Numero de inodos: " << recuperado.s_inodes_count << endl;
-    cout << "Numero de bloques: " << recuperado.s_blocks_count << endl;
-    cout << "Fecha montado: " << recuperado.s_mtime << endl;
-    cout << "inicio de los bloques " << recuperado.s_block_start << endl;
-    cout << "inicio de los bloques " << n << endl;
-    cout << endl;
+//    cout << endl;
+//    cout << "Tipo de sistema: " << recuperado.s_filesystem_type << endl;
+//    cout << "Numero de inodos: " << recuperado.s_inodes_count << endl;
+//    cout << "Numero de bloques: " << recuperado.s_blocks_count << endl;
+//    cout << "Fecha montado: " << recuperado.s_mtime << endl;
+//    cout << "inicio de los bloques " << recuperado.s_block_start << endl;
+//    cout << "inicio de los bloques " << n << endl;
+//    cout << endl;
 
     inode.i_uid = 1;
-    inode.i_uid = 1;
+    inode.i_gid = 1;
     inode.i_size = 0;
     strcpy(inode.i_atime, spr.s_umtime);
     strcpy(inode.i_ctime, spr.s_umtime);
     strcpy(inode.i_mtime, spr.s_umtime);
-    inode.i_type = '0';
+    inode.i_type = 0;
     inode.i_perm = 664;
     inode.i_block[0] = 0;
 
     Structs::Folderblock fb;
     strcpy(fb.b_content[0].b_name, ".");
+    fb.b_content[0].b_inodo = 0;
     strcpy(fb.b_content[1].b_name, "..");
+    fb.b_content[1].b_inodo = 0;
     strcpy(fb.b_content[2].b_name, "user.txt");
     fb.b_content[2].b_inodo = 1;
 
-    string data= "1,G,root\n1,U,root,root,123\n";
+    string data = "1,G,root\n1,U,root,root,123\n";
     Structs::Inodes inodetmp;
     inodetmp.i_uid = 1;
-    inodetmp.i_uid = 1;
-    inodetmp.i_size = 0;
+    inodetmp.i_gid = 1;
+    inodetmp.i_size = sizeof(data.c_str()) + sizeof(Structs::Folderblock);
     strcpy(inodetmp.i_atime, spr.s_umtime);
     strcpy(inodetmp.i_ctime, spr.s_umtime);
     strcpy(inodetmp.i_mtime, spr.s_umtime);
-    inodetmp.i_type = sizeof(data.c_str());
+    inodetmp.i_type = 1;
     inodetmp.i_perm = 664;
     inodetmp.i_block[0] = 1;
+
+    inode.i_size = inodetmp.i_size + sizeof(Structs::Folderblock) + sizeof(Structs::Inodes);
 
     Structs::Fileblock fileb;
     strcpy(fileb.b_content, data.c_str());
@@ -176,6 +179,126 @@ void FileSystem::ext2(Structs::Superblock spr, Structs::Partition p, int n, stri
     char caracter = '1';
     fwrite(&caracter, sizeof(caracter), 1, bfiles);
     fwrite(&caracter, sizeof(caracter), 1, bfiles);
+
+    fseek(bfiles, spr.s_bm_block_start, SEEK_SET);
+    fwrite(&caracter, sizeof(caracter), 1, bfiles);
+    fwrite(&caracter, sizeof(caracter), 1, bfiles);
+
+    fseek(bfiles, spr.s_inode_start, SEEK_SET);
+    fwrite(&inode, sizeof(Structs::Inodes), 1, bfiles);
+    fwrite(&inodetmp, sizeof(Structs::Inodes), 1, bfiles);
+
+    fseek(bfiles, spr.s_block_start, SEEK_SET);
+    fwrite(&fb, sizeof(Structs::Folderblock), 1, bfiles);
+    fwrite(&fileb, sizeof(Structs::Fileblock), 1, bfiles);
+    fclose(bfiles);
+}
+
+void FileSystem::ext3(Structs::Superblock spr, Structs::Partition p, int n, string path) {
+    spr.s_bm_inode_start = p.part_start + sizeof(Structs::Superblock) + (n * sizeof(Structs::Journaling));
+    spr.s_bm_block_start = spr.s_bm_inode_start + n;
+    spr.s_inode_start = spr.s_bm_block_start + (3 * n);
+    spr.s_block_start = spr.s_bm_inode_start + (n * sizeof(Structs::Inodes));
+
+    FILE *bfile = fopen(path.c_str(), "rb+");
+    fseek(bfile, p.part_start, SEEK_SET);
+    fwrite(&spr, sizeof(Structs::Superblock), 1, bfile);
+
+    Structs::Journaling journaling;
+    for (int i = 0; i < n; i++) {
+        fwrite(&journaling, sizeof(Structs::Journaling), 1, bfile);
+    }
+
+    char zero = '0';
+    fseek(bfile, spr.s_bm_inode_start, SEEK_SET);
+    for (int i = 0; i < n; i++) {
+        fwrite(&zero, sizeof(zero), 1, bfile);
+    }
+
+    fseek(bfile, spr.s_bm_block_start, SEEK_SET);
+    for (int i = 0; i < (3 * n); i++) {
+        fwrite(&zero, sizeof(zero), 1, bfile);
+    }
+
+    Structs::Inodes inode;
+    fseek(bfile, spr.s_inode_start, SEEK_SET);
+    for (int i = 0; i < n; i++) {
+        fwrite(&inode, sizeof(Structs::Inodes), 1, bfile);
+    }
+
+    Structs::Folderblock folder;
+    fseek(bfile, spr.s_block_start, SEEK_SET);
+    for (int i = 0; i < (3 * n); i++) {
+        fwrite(&folder, sizeof(Structs::Folderblock), 1, bfile);
+    }
+    fclose(bfile);
+
+    Structs::Superblock recuperado;
+    FILE *archivo = fopen(path.c_str(), "rb");
+    fseek(archivo, p.part_start, SEEK_SET);
+    fread(&recuperado, sizeof(Structs::Superblock), 1, archivo);
+    fclose(archivo);
+
+    inode.i_uid = 1;
+    inode.i_gid = 1;
+    inode.i_size = 0;
+    strcpy(inode.i_atime, spr.s_umtime);
+    strcpy(inode.i_ctime, spr.s_umtime);
+    strcpy(inode.i_mtime, spr.s_umtime);
+    inode.i_type = 0;
+    inode.i_perm = 664;
+    inode.i_block[0] = 0;
+
+    strcpy(journaling.content, "carpeta base");
+    strcpy(journaling.path, "/");
+    journaling.type = 0;
+    strcpy(journaling.operation, "mkdir");
+    strcpy(journaling.date, spr.s_umtime);
+
+    Structs::Folderblock fb;
+    strcpy(fb.b_content[0].b_name, ".");
+    fb.b_content[0].b_inodo = 0;
+    strcpy(fb.b_content[1].b_name, "..");
+    fb.b_content[1].b_inodo = 0;
+    strcpy(fb.b_content[2].b_name, "user.txt");
+    fb.b_content[2].b_inodo = 1;
+
+    string data = "1,G,root\n1,U,root,root,123\n";
+    Structs::Inodes inodetmp;
+    inodetmp.i_uid = 1;
+    inodetmp.i_gid = 1;
+    inodetmp.i_size = sizeof(data.c_str()) + sizeof(Structs::Folderblock);
+    strcpy(inodetmp.i_atime, spr.s_umtime);
+    strcpy(inodetmp.i_ctime, spr.s_umtime);
+    strcpy(inodetmp.i_mtime, spr.s_umtime);
+    inodetmp.i_type = 1;
+    inodetmp.i_perm = 664;
+    inodetmp.i_block[0] = 1;
+
+    inode.i_size = inodetmp.i_size + sizeof(Structs::Folderblock) + sizeof(Structs::Inodes);
+
+    Structs::Journaling joutmp;
+    strcpy(joutmp.content, data.c_str());
+    strcpy(joutmp.path, "/user.txt");
+    joutmp.type = 1;
+    joutmp.size = sizeof(data) + sizeof(Structs::Folderblock);
+    strcpy(joutmp.operation, "mkfl");
+    strcpy(joutmp.date, spr.s_umtime);
+
+    Structs::Fileblock fileb;
+    strcpy(fileb.b_content, data.c_str());
+
+    FILE *bfiles = fopen(path.c_str(), "rb+");
+
+    fseek(bfiles, p.part_status+ sizeof(Structs::Superblock), SEEK_SET);
+    fwrite(&journaling, sizeof(Structs::Journaling), 1, bfiles);
+    fwrite(&joutmp, sizeof(Structs::Journaling), 1, bfiles);
+
+    fseek(bfiles, spr.s_bm_inode_start, SEEK_SET);
+    char caracter = '1';
+    fwrite(&caracter, sizeof(caracter), 1, bfiles);
+    fwrite(&caracter, sizeof(caracter), 1, bfiles);
+
     fseek(bfiles, spr.s_bm_block_start, SEEK_SET);
     fwrite(&caracter, sizeof(caracter), 1, bfiles);
     fwrite(&caracter, sizeof(caracter), 1, bfiles);

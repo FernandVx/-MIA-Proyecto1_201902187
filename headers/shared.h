@@ -11,6 +11,7 @@ class Shared
 public:
     Shared();
     string upper(string s);
+    string lower(string s);
     bool compare(string s1, string s2);
     void handler(string title, string message);
     bool confirmation(string title, string message);

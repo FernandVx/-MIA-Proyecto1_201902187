@@ -16,9 +16,8 @@ bool Admin::login(vector<string> context, Mount m) {
     string usuario;
     string password;
 
-    for (int i = 0; i < context.size(); i++) {
-        string current = context.at(i);
-        string id_ = current.substr(0, current.find("="));
+    for (auto current : context) {
+        string id_ = shared.lower(current.substr(0, current.find('=')));
         current.erase(0, id_.length() + 1);
         if (current.substr(0, 1) == "\"") {
             current = current.substr(1, current.length() - 2);

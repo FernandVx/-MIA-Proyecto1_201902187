@@ -10,26 +10,33 @@ using namespace std;
 Mount::Mount() {}
 
 void Mount::mount(vector<string> context) {
+    if (context.empty()) {
+        listmount();
+        return;
+    }
     vector<string> required = {"name", "path"};
     string path;
     string name;
 
-    for (int i = 0; i < context.size(); i++) {
-        string current = context.at(i);
-        string id = current.substr(0, current.find('='));
+    for (auto current : context) {
+        string id = shared.lower(current.substr(0, current.find('=')));
         current.erase(0, id.length() + 1);
         if (current.substr(0, 1) == "\"") {
             current = current.substr(1, current.length() - 2);
         }
 
         if (shared.compare(id, "name")) {
-            auto itr = find(required.begin(), required.end(), id);
-            required.erase(itr);
-            name = current;
+            if (count(required.begin(), required.end(), id)) {
+                auto itr = find(required.begin(), required.end(), id);
+                required.erase(itr);
+                name = current;
+            }
         } else if (shared.compare(id, "path")) {
-            auto itr = find(required.begin(), required.end(), id);
-            required.erase(itr);
-            path = current;
+            if (count(required.begin(), required.end(), id)) {
+                auto itr = find(required.begin(), required.end(), id);
+                required.erase(itr);
+                path = current;
+            }
         }
     }
     if (required.size() != 0) {
@@ -51,7 +58,18 @@ void Mount::mount(string p, string n) {
         fread(&disk, sizeof(Structs::MBR), 1, validate);
         fclose(validate);
 
-        dsk.findby(disk, n);
+        Structs::Partition partition = dsk.findby(disk, n, p);
+        if (partition.part_type == 'E') {
+            vector<Structs::EBR> ebrs = dsk.getlogics(partition, p);
+            if (!ebrs.empty()) {
+                Structs::EBR ebr = ebrs.at(0);
+                n = ebr.part_name;
+                shared.handler("", "se montará una lógica");
+            } else {
+                throw runtime_error("no se puede montar una extendida");
+            }
+        }
+
 
         for (int i = 0; i < 99; i++) {
             if (mounted[i].path == p) {
@@ -132,7 +150,6 @@ void Mount::unmount(string id) {
 
                     MountedPartition mp = MountedPartition();
                     mounted[i].mpartitions[j] = mp;
-                    cout << "Particion desmontada: vd" << mounted[i].mpartitions[j].status << endl;
                     shared.response("UNMOUNT", "se ha realizado correctamente el unmount -id=" + past);
                     return;
                 }
@@ -178,10 +195,22 @@ Structs::Partition Mount::getmount(string id, string *p) {
                 fread(&disk, sizeof(Structs::MBR), 1, validate);
                 fclose(validate);
                 *p = mounted[i].path;
-                return dsk.findby(disk, mounted[i].mpartitions[j].name);
+                return dsk.findby(disk, mounted[i].mpartitions[j].name, mounted[i].path);
             }
         }
     }
     throw runtime_error("partición no existente");
+}
+
+void Mount::listmount() {
+    cout << "\n<-------------------------- MOUNTS -------------------------->"
+         << endl;
+    for (int i = 0; i < 99; i++) {
+        for (int j = 0; j < 26; j++) {
+            if (mounted[i].mpartitions[j].status == '1') {
+                cout << "> 87" << i + 1 << alphabet.at(j) << ", " << mounted[i].mpartitions[j].name << endl;
+            }
+        }
+    }
 }
 

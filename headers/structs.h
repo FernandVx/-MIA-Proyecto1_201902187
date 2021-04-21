@@ -31,11 +31,11 @@ public:
     } MBR;
 
     typedef struct _EBR {
-        char part_status;
+        char part_status = '0';
         char part_fit;
         int part_start;
-        int part_size;
-        int part_next;
+        int part_size = 0;
+        int part_next = -1;
         char part_name[16];
     } EBR;
 
@@ -93,7 +93,7 @@ public:
 
     typedef struct _Journaling {
         char operation[10] = "";
-        char type = '0';
+        char type = -1;
         char path[100] = "";
         char content[60] = "";
         char date[20] = "";

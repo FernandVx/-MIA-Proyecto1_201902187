@@ -40,9 +40,11 @@ public:
 
     vector<string> getElements(string txt, char c);
 
+    User logged;
+
 private:
     Shared shared;
-    User logged;
+
     Mount mount;
 };
 

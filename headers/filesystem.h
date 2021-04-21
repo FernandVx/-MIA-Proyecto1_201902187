@@ -21,7 +21,7 @@ public:
 
     void ext2(Structs::Superblock spr, Structs::Partition p, int n, string path);
 
-    void ext3(Structs::Superblock spr);
+    void ext3(Structs::Superblock spr, Structs::Partition p, int n, string path);
 
 private:
     Mount mount;

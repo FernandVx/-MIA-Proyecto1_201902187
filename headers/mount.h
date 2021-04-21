@@ -35,6 +35,8 @@ public:
 
     void unmount(string id);
 
+    void listmount();
+
     Structs::Partition getmount(string id, string *p);
 
 private:
